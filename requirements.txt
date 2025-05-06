@@ -4,11 +4,15 @@
 # langchain_openai==0.0.5
 python-dotenv==1.0.1
 streamlit==1.30.0
-chromadb==0.3.29
+# chromadb==0.3.29
 beautifulsoup4==4.12.2
-groq==0.15.0
+# groq==0.15.0
 langchain-core==0.3.30
-langchain==0.1.13
 langchain-community==0.0.30
 langchain-openai==0.1.7
 langchain-groq==0.2.3
+
+langchain
+chromadb
+groq
+pydantic
