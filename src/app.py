@@ -24,8 +24,6 @@ from langchain.embeddings.base import Embeddings
 
 load_dotenv()
 os.environ['GROQ_API_KEY'] = "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"
-os.environ["OPENAI_API_KEY"] = "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"
-print("Manually set key:", os.getenv("OPENAI_API_KEY"))
 print("API Key Loaded:", os.getenv("GROQ_API_KEY"))
 # groq_api = GroqAPI(api_key=os.getenv("GROQ_API_KEY"))
 class SentenceTransformerEmbeddings(Embeddings):
