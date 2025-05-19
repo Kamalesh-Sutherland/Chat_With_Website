@@ -24,6 +24,8 @@ from langchain.embeddings.base import Embeddings
 
 load_dotenv()
 os.environ['GROQ_API_KEY'] = "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"
+os.environ["OPENAI_API_KEY"] = "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"
+print("Manually set key:", os.getenv("OPENAI_API_KEY"))
 print("API Key Loaded:", os.getenv("GROQ_API_KEY"))
 # groq_api = GroqAPI(api_key=os.getenv("GROQ_API_KEY"))
 class SentenceTransformerEmbeddings(Embeddings):
@@ -88,12 +90,31 @@ def generate_embeddings(texts):
 #         vector_store.persist()  # 👈 Very important: explicitly persist it
 
 #     return vector_store
-def get_vectorstore_from_url(url):
-    persist_dir = "./chroma_db"
+# def get_vectorstore_from_url(url):
+#     persist_dir = "./chroma_db"
 
-    # Clean up old DB if switching to a new website
-    if os.path.exists(persist_dir):
-        shutil.rmtree(persist_dir)
+#     # Clean up old DB if switching to a new website
+#     if os.path.exists(persist_dir):
+#         shutil.rmtree(persist_dir)
+
+#     loader = WebBaseLoader(url)
+#     document = loader.load()
+#     text_splitter = RecursiveCharacterTextSplitter()
+#     document_chunks = text_splitter.split_documents(document)
+
+#     vector_store = Chroma.from_documents(
+#         document_chunks,
+#         SentenceTransformerEmbeddings(),
+#         persist_directory=persist_dir
+#     )
+#     vector_store.persist()
+
+#     return vector_store
+
+
+def get_vectorstore_from_url(website_url):
+    persist_directory = "/tmp/chroma_db"  # Writable location on Render
+    os.makedirs(persist_directory, exist_ok=True)
 
     loader = WebBaseLoader(url)
     document = loader.load()
@@ -101,13 +122,14 @@ def get_vectorstore_from_url(url):
     document_chunks = text_splitter.split_documents(document)
 
     vector_store = Chroma.from_documents(
+        # documents,
+        # embedding=embedding_model,
         document_chunks,
         SentenceTransformerEmbeddings(),
-        persist_directory=persist_dir
+        persist_directory=persist_directory
     )
-    vector_store.persist()
-
     return vector_store
+
 
 def get_context_retriever_chain(vector_store):
     # llm = ChatOpenAI()
