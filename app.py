@@ -116,7 +116,7 @@ def get_vectorstore_from_url(website_url):
     persist_directory = "/tmp/chroma_db"  # Writable location on Render
     os.makedirs(persist_directory, exist_ok=True)
 
-    loader = WebBaseLoader(url)
+    loader = WebBaseLoader(website_url)
     document = loader.load()
     text_splitter = RecursiveCharacterTextSplitter()
     document_chunks = text_splitter.split_documents(document)
