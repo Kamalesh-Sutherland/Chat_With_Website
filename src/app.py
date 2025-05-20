@@ -112,22 +112,44 @@ def generate_embeddings(texts):
 #     return vector_store
 
 
+# def get_vectorstore_from_url(website_url):
+#     persist_directory = "/tmp/chroma_db"  # Writable location on Render
+#     os.makedirs(persist_directory, exist_ok=True)
+
+#     loader = WebBaseLoader(website_url)
+#     document = loader.load()
+#     text_splitter = RecursiveCharacterTextSplitter()
+#     document_chunks = text_splitter.split_documents(document)
+
+#     vector_store = Chroma.from_documents(
+#         # documents,
+#         # embedding=embedding_model,
+#         document_chunks,
+#         SentenceTransformerEmbeddings(),
+#         persist_directory=persist_directory
+#     )
+#     return vector_store
+
+from langchain.document_loaders import WebBaseLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.vectorstores import FAISS
+
 def get_vectorstore_from_url(website_url):
-    persist_directory = "/tmp/chroma_db"  # Writable location on Render
-    os.makedirs(persist_directory, exist_ok=True)
-
+    # Step 1: Load web content
     loader = WebBaseLoader(website_url)
-    document = loader.load()
-    text_splitter = RecursiveCharacterTextSplitter()
-    document_chunks = text_splitter.split_documents(document)
+    documents = loader.load()
 
-    vector_store = Chroma.from_documents(
-        # documents,
-        # embedding=embedding_model,
-        document_chunks,
-        SentenceTransformerEmbeddings(),
-        persist_directory=persist_directory
-    )
+    # Step 2: Split into chunks
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    document_chunks = text_splitter.split_documents(documents)
+
+    # Step 3: Set up embedding model
+    embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+
+    # Step 4: Use FAISS (in-memory vector store)
+    vector_store = FAISS.from_documents(document_chunks, embedding_model)
+
     return vector_store
 
 
