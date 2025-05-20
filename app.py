@@ -112,8 +112,28 @@ def generate_embeddings(texts):
 #     return vector_store
 
 
+# def get_vectorstore_from_url(website_url):
+#     persist_directory = "/tmp/chroma_db"  # Writable location on Render
+#     os.makedirs(persist_directory, exist_ok=True)
+
+#     loader = WebBaseLoader(website_url)
+#     document = loader.load()
+#     text_splitter = RecursiveCharacterTextSplitter()
+#     document_chunks = text_splitter.split_documents(document)
+
+#     vector_store = Chroma.from_documents(
+#         # documents,
+#         # embedding=embedding_model,
+#         document_chunks,
+#         SentenceTransformerEmbeddings(),
+#         persist_directory=persist_directory
+#     )
+#     return vector_store
+
+from chromadb.config import Settings
+
 def get_vectorstore_from_url(website_url):
-    persist_directory = "/tmp/chroma_db"  # Writable location on Render
+    persist_directory = "/tmp/chroma_db"
     os.makedirs(persist_directory, exist_ok=True)
 
     loader = WebBaseLoader(website_url)
@@ -121,15 +141,20 @@ def get_vectorstore_from_url(website_url):
     text_splitter = RecursiveCharacterTextSplitter()
     document_chunks = text_splitter.split_documents(document)
 
+    chroma_settings = Settings(
+        chroma_db_impl="duckdb+parquet",
+        persist_directory=persist_directory,
+        anonymized_telemetry=False
+    )
+
     vector_store = Chroma.from_documents(
-        # documents,
-        # embedding=embedding_model,
         document_chunks,
         SentenceTransformerEmbeddings(),
-        persist_directory=persist_directory
+        persist_directory=persist_directory,
+        client_settings=chroma_settings  # ✅ Ensures everything goes to /tmp
     )
+    vector_store.persist()
     return vector_store
-
 
 def get_context_retriever_chain(vector_store):
     # llm = ChatOpenAI()
