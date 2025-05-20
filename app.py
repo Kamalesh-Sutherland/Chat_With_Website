@@ -112,28 +112,8 @@ def generate_embeddings(texts):
 #     return vector_store
 
 
-# def get_vectorstore_from_url(website_url):
-#     persist_directory = "/tmp/chroma_db"  # Writable location on Render
-#     os.makedirs(persist_directory, exist_ok=True)
-
-#     loader = WebBaseLoader(website_url)
-#     document = loader.load()
-#     text_splitter = RecursiveCharacterTextSplitter()
-#     document_chunks = text_splitter.split_documents(document)
-
-#     vector_store = Chroma.from_documents(
-#         # documents,
-#         # embedding=embedding_model,
-#         document_chunks,
-#         SentenceTransformerEmbeddings(),
-#         persist_directory=persist_directory
-#     )
-#     return vector_store
-
-from chromadb.config import Settings
-
 def get_vectorstore_from_url(website_url):
-    persist_directory = "/tmp/chroma_db"
+    persist_directory = "/tmp/chroma_db"  # Writable location on Render
     os.makedirs(persist_directory, exist_ok=True)
 
     loader = WebBaseLoader(website_url)
@@ -141,20 +121,15 @@ def get_vectorstore_from_url(website_url):
     text_splitter = RecursiveCharacterTextSplitter()
     document_chunks = text_splitter.split_documents(document)
 
-    chroma_settings = Settings(
-        chroma_db_impl="duckdb+parquet",
-        persist_directory=persist_directory,
-        anonymized_telemetry=False
-    )
-
     vector_store = Chroma.from_documents(
+        # documents,
+        # embedding=embedding_model,
         document_chunks,
         SentenceTransformerEmbeddings(),
-        persist_directory=persist_directory,
-        client_settings=chroma_settings  # ✅ Ensures everything goes to /tmp
+        persist_directory=persist_directory
     )
-    vector_store.persist()
     return vector_store
+
 
 def get_context_retriever_chain(vector_store):
     # llm = ChatOpenAI()
@@ -205,93 +180,40 @@ def get_response(user_input):
     return response['answer']
 
 # app config
-# st.set_page_config(page_title="Chat with websites", page_icon="🤖")
-# st.title("Chat with websites")
-
-# # sidebar
-# with st.sidebar:
-#     st.header("Settings")
-#     website_url = st.text_input("Website URL")
-
-# if website_url is None or website_url == "":
-#     st.info("Please enter a website URL")
-
-# else:
-#     # session state
-#     if "chat_history" not in st.session_state:
-#         st.session_state.chat_history = [
-#             AIMessage(content="Hello, I am a bot. How can I help you?"),
-#         ]
-#     if "vector_store" not in st.session_state:
-#         st.session_state.vector_store = get_vectorstore_from_url(website_url)    
-
-#     # user input
-#     user_query = st.chat_input("Type your message here...")
-#     if user_query is not None and user_query != "":
-#         response = get_response(user_query)
-#         st.session_state.chat_history.append(HumanMessage(content=user_query))
-#         st.session_state.chat_history.append(AIMessage(content=response))
-        
-       
-
-#     # conversation
-#     for message in st.session_state.chat_history:
-#         if isinstance(message, AIMessage):
-#             with st.chat_message("AI"):
-#                 st.write(message.content)
-#         elif isinstance(message, HumanMessage):
-#             with st.chat_message("Human"):
-#                 st.write(message.content)
-# pip install streamlit langchain langchain-openai beautifulsoup4 python-dotenv chromadb sentence-transformers
-
-
-# =================== STREAMLIT UI ===================
-
-# Set page config
 st.set_page_config(page_title="Chat with websites", page_icon="🤖")
 st.title("Chat with websites")
 
-# Sidebar for user to enter URL
+# sidebar
 with st.sidebar:
     st.header("Settings")
     website_url = st.text_input("Website URL")
 
-# Initialize session state
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [
-        AIMessage(content="Hello, I am a bot. How can I help you?")
-    ]
-if "last_website_url" not in st.session_state:
-    st.session_state.last_website_url = None
+if website_url is None or website_url == "":
+    st.info("Please enter a website URL")
 
-# If a URL is provided
-if website_url:
-    if website_url != st.session_state.last_website_url:
-        # Remove old Chroma DB to prevent reuse
-        persist_directory = "/tmp/chroma_db"
-        if os.path.exists(persist_directory):
-            shutil.rmtree(persist_directory)
-
-        # Rebuild vectorstore and update session state
-        st.session_state.vector_store = get_vectorstore_from_url(website_url)
-        st.session_state.last_website_url = website_url
-
-        # Reset chat history
+else:
+    # session state
+    if "chat_history" not in st.session_state:
         st.session_state.chat_history = [
-            AIMessage(content="Hello, I am a bot. How can I help you?")
+            AIMessage(content="Hello, I am a bot. How can I help you?"),
         ]
+    if "vector_store" not in st.session_state:
+        st.session_state.vector_store = get_vectorstore_from_url(website_url)    
 
-    # Chat input
+    # user input
     user_query = st.chat_input("Type your message here...")
-    if user_query:
+    if user_query is not None and user_query != "":
         response = get_response(user_query)
         st.session_state.chat_history.append(HumanMessage(content=user_query))
         st.session_state.chat_history.append(AIMessage(content=response))
+        
+       
 
-    # Display chat history
+    # conversation
     for message in st.session_state.chat_history:
-        role = "AI" if isinstance(message, AIMessage) else "Human"
-        with st.chat_message(role):
-            st.write(message.content)
-else:
-    st.info("Please enter a website URL in the sidebar to begin.")
+        if isinstance(message, AIMessage):
+            with st.chat_message("AI"):
+                st.write(message.content)
+        elif isinstance(message, HumanMessage):
+            with st.chat_message("Human"):
+                st.write(message.content)
