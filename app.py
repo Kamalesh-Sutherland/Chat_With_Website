@@ -136,7 +136,7 @@ def get_context_retriever_chain(vector_store):
     llm = ChatGroq(
     temperature=0,
     model_name= "llama-3.3-70b-versatile", #"mixtral-8x7b-32768",  # or "llama3-8b-8192"
-    groq_api_key=os.getenv("GROQ_API_KEY")
+    groq_api_key="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" # os.getenv("GROQ_API_KEY")
 )
     retriever = vector_store.as_retriever()
     
@@ -156,7 +156,7 @@ def get_conversational_rag_chain(retriever_chain):
     llm = ChatGroq(
     temperature=0,
     model_name= "llama-3.3-70b-versatile", #"mixtral-8x7b-32768",  # or "llama3-8b-8192"
-    groq_api_key=os.getenv("GROQ_API_KEY")
+    groq_api_key="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" # os.getenv("GROQ_API_KEY")
 )
     prompt = ChatPromptTemplate.from_messages([
       ("system", "Answer the user's questions based on the below context:\n\n{context}"),
